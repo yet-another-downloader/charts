@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "yad-backend.fullname" . }}
+  labels:
+    {{- include "yad-backend.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "yad-backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "yad-backend.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "yad-backend.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+
+          env:
+          # use 80 port
+          - name: SERVER_PORT
+            value: "80"
+
+          - name: _JAVA_OPTIONS
+            value: {{ .Values.yad.javaOptions}}
+
+          - name: YAD_YOUTUBE_PATH-DOWNLOAD
+            value: {{ .Values.yad.youtube.pathDownload}}
+
+          - name: YAD_YOUTUBE_API-KEY
+            value: {{ .Values.yad.youtube.apiKey}}
+
+          - name: SPRING_DATA_MONGODB_URI
+            value: {{ .Values.yad.database.uri}}
+
+          - name: SPRING_DATA_MONGODB_DATABASE
+            value: {{ .Values.yad.database.authDb}}
+
+
+          {{- if .Values.yad.cifs.enable }}
+          - name: CIFS_PARAMS
+            value: {{ .Values.yad.cifs.params}}
+
+          - name: CIFS_MOUNT_PATH
+            value: {{ .Values.yad.cifs.mountPath}}
+          {{- end }}
+
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.image }}:{{ .Values.image.build }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
