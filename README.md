@@ -1,6 +1,12 @@
 # Helm charts for yad
 
-Use Helm 3
+## Requirements
+
+ - Helm 3
+ - Kubernetes cluster
+ - Deployed MongoDB
+ - Generated api key for youtube
+ - (Optional) Samba NAS
 
 ## Deploy
 
