@@ -28,6 +28,8 @@ helm upgrade -i --namespace ${NAMESPACE} \
  ./yad-backend
 ```
 
+### Deploy frontend
+
 ```bash
 export YAD_FRONTEND_BUILD=28
 export RELEASE_FRONTEND_NAME=frontend
@@ -42,9 +44,11 @@ helm upgrade -i --namespace ${NAMESPACE} \
  ./yad-frontend
 ```
 
-### Delete
+## Delete
+
+If you want to delete
 
 ```bash
 helm delete $RELEASE_BACKEND_NAME  --namespace $NAMESPACE
-helm delete $RELEASE_FRONTEND_NAME  --namespace $NAMESPACE
+helm delete $RELEASE_FRONTEND_NAME --namespace $NAMESPACE
 ```
